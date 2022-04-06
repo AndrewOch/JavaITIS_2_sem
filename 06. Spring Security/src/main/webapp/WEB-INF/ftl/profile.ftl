@@ -8,6 +8,7 @@
 <div class="form-style-3">
     <fieldset>
         <legend>${user.firstName} ${user.lastName}</legend>
+        <a href="/logout">Выйти((</a>
     </fieldset>
 </div>
 

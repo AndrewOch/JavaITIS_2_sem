@@ -15,6 +15,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.LogoutHandler;
+import ru.kpfu.itis.enums.Role;
 import ru.kpfu.itis.security.filter.CookieAuthFilter;
 import ru.kpfu.itis.security.handler.SuccessfulAuthenticationHandler;
 
@@ -26,6 +28,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     @Qualifier("customSuccessfulAuthenticationHandler")
     private SuccessfulAuthenticationHandler successfulAuthenticationHandler;
+
+    @Autowired
+    @Qualifier("customLogoutHandler")
+    private LogoutHandler logoutHandler;
 
     @Autowired
     @Qualifier("customUserDetailsImpl")
@@ -50,13 +56,18 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .permitAll()
                 //.defaultSuccessUrl("/profile")
                 .and()
-                .logout().logoutSuccessUrl("/signIn").permitAll()
+                .logout()
+                .logoutUrl("/logout")
+                .deleteCookies("Auth", "JSESSIONID")
+                .addLogoutHandler(logoutHandler)
+                .logoutSuccessUrl("/signIn").permitAll()
                 .and()
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-                /*.and()
-                .antMatchers("/signUp", "/signIn", "/main").permitAll()
-                .antMatchers("/profile", "/order").hasAnyRole(Role.ROLE_USER.name(), Role.ROLE_ADMIN.name())
-                .antMatchers("/admin").hasRole(Role.ROLE_ADMIN.name());*/
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and()
+                .authorizeRequests()
+                .antMatchers("/signUp", "/signIn", "/profile").permitAll()
+                .antMatchers("/products").hasAnyRole("SHOP");
+
         http.addFilterAfter(cookieAuthFilter, UsernamePasswordAuthenticationFilter.class);
     }
 
